@@ -1,5 +1,7 @@
 <?php // Arquivo de conexão com o banco de dados
 
+date_default_timezone_set('America/Sao_Paulo');
+
 if (!class_exists("Conexao")) // Verifica se a conexão já foi realizada
 {
     class Conexao
@@ -17,9 +19,14 @@ if (!class_exists("Conexao")) // Verifica se a conexão já foi realizada
 
                 $conexao = new PDO
                 (
-                    "mysql:host=$servidor;dbname=$banco",
+                    "mysql:host=$servidor;dbname=$banco;charset=utf8mb4",
                     "$usuario",
-                    "$senha"
+                    "$senha",
+                    array(
+                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                        PDO::ATTR_EMULATE_PREPARES => true
+                    )
                 );
                 
                 return $conexao;

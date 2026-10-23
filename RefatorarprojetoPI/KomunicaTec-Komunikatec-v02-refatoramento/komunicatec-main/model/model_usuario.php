@@ -26,7 +26,10 @@ class Usuario // Declaração da classe
 
     public function __set($atributo, $valor) // Função set mágico recebe automaticamente nome do atributo e o valor a aplicar
     {
-        $this->$atributo = $valor; // Atribui característica de classe com o valor recebido
+        if (property_exists($this, $atributo))
+        {
+            $this->$atributo = $valor; // Atribui característica de classe com o valor recebido
+        }
     }
 
     // Construtor de conexão
@@ -43,11 +46,11 @@ class Usuario // Declaração da classe
     {
         // Comando SQL de busca
         $verifica_SQL = "SELECT
-            u.id_usuario, u.email, u.senha, c.id_cpf, c.nivel_acesso
+            u.id_usuario, u.nome, u.sobrenome, u.email, u.senha, c.id_cpf, c.nivel_acesso, c.cargo
         FROM usuario u
-        RIGHT JOIN
+        INNER JOIN
             perfil_administrador_comunicador c ON u.id_usuario = c.id_usuario_fk
-        WHERE email = ?
+        WHERE u.email = ?
         LIMIT 1";
         // Valores de busca
         $valores_verificacao = array($this->email);
@@ -57,14 +60,19 @@ class Usuario // Declaração da classe
 
         if ($valor) // Se existem valores na consulta
         {
-            $verificacao['id_usuario']  = $valor['id_usuario']; // Armazena resultado da busca
-            $verificacao['email']       = $valor['email'];
-            $verificacao['senha']       = $valor['senha'];
-            $verificacao['id_cpf']      = $valor['id_cpf'];
-            $verificacao['nivel_acesso']      = $valor['nivel_acesso'];
+            $verificacao['id_usuario']   = $valor['id_usuario']; // Armazena resultado da busca
+            $verificacao['nome']         = $valor['nome'];
+            $verificacao['sobrenome']    = $valor['sobrenome'];
+            $verificacao['email']        = $valor['email'];
+            $verificacao['senha']        = $valor['senha'];
+            $verificacao['id_cpf']       = $valor['id_cpf'];
+            $verificacao['nivel_acesso'] = $valor['nivel_acesso'];
+            $verificacao['cargo']        = $valor['cargo'];
 
             return $verificacao; // Retorna o valor da busca
         }
+
+        return false;
     }
 }
 

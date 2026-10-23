@@ -21,7 +21,10 @@ class Comunicador_Administrador // Declaração da classe
 
 	public function __set($atributo, $valor) // Função set mágico recebe automaticamente nome do atributo e o valor a aplicar
 	{
-		$this->$atributo = $valor; // Atribui característica de classe com o valor recebido
+		if (property_exists($this, $atributo))
+		{
+			$this->$atributo = $valor; // Atribui característica de classe com o valor recebido
+		}
 	}
 
 	// Construtor de conexão
@@ -57,7 +60,7 @@ class Comunicador_Administrador // Declaração da classe
 
 		$executar = $this->con->prepare($consulta_SQL); // Prepara o comando de seleção e o armazena
 		$executar->execute($valores_consulta); // Executa o comando com a especificação
-		
+
 		$valores = $executar->fetchAll(); // Armazena os valores da consulta
 		if ($valores) // Se existem valores na consulta
 		{

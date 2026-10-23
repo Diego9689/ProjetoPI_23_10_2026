@@ -18,7 +18,10 @@ class Categoria // Declaração da classe
 
     public function __set($atributo, $valor) // Função set mágico recebe automaticamente nome do atributo e o valor a aplicar
     {
-        $this->$atributo = $valor; // Atribui característica de classe com o valor recebido
+        if (property_exists($this, $atributo))
+        {
+            $this->$atributo = $valor; // Atribui característica de classe com o valor recebido
+        }
     }
 
     // Construtor de conexão
@@ -32,7 +35,7 @@ class Categoria // Declaração da classe
 
     public function consultar() // Consulta dados da tabela
     {
-        $consulta_SQL = "SELECT * FROM categoria ORDER BY id_categoria"; // Comando SQL de seleção
+        $consulta_SQL = "SELECT id_categoria, nome_categoria FROM categoria ORDER BY id_categoria"; // Comando SQL de seleção
         $executar = $this->con->prepare($consulta_SQL); // Prepara o comando de seleção e o armazena
         $executar->execute(); // Executa o comando sem especificações
 
