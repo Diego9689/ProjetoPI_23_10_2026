@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="reset.css">
+    <link rel="stylesheet" href="cabecario.css">
+    <!-- Fontes Google -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>KomunikaTec</title>
+</head>
+
+<body>
+    <!-- Cabeçalho e navegação principal -->
+    <?php include_once 'cabecario.php'; ?>
+
+    <main>
+        <section class="fundo-login">
+            <div class="caixa-acesso">
+                <article>
+                    <figure>
+                        <img class="divisao-imagem" src="imagens/foto do login-cortada.png" alt="Imagem decorativa de login">
+                    </figure>
+                    <section class="login-size">
+                        <h2 class="titulo-login exibir-central">Entrar</h2>
+                        <!-- Links para alternar entre tipo de usuário -->
+                        <p class="span-login exibir-central">
+                            <a href="#" id="adminLink" class="active">admin ou comunicador</a> &ensp;|&ensp;
+                            <a href="#" id="alunoLink" class="inactive">aluno ou ex-aluno</a>
+                        </p>
+                        <!-- Formulário dinâmico (campos trocados via JS) -->
+                        <form action="../controller/controlar_usuario.php?acao=entrar" method="post">
+                            <div id="formFields">
+                                <label for="email" class="oculto-visual">Email ou CPF</label>
+                                <input id="email" name="email" class="inputs-login exibir-central" type="text" placeholder="email ou CPF" required><br>
+
+                                <label for="senha" class="oculto-visual">Senha</label>
+                                <input id="senha" name="senha" class="inputs-login exibir-central" type="password" placeholder="senha" required><br>
+                                <input id="perfil" name="perfil" type="hidden" value="comunicador">
+                            </div>
+
+                            <p class="cadastro-link">
+                                Não tem conta? <a href="cadastro.php">Cadastre-se</a>
+                            </p>
+
+                            <button class="botao-enviar" type="submit">Entrar</button>
+                            <br><br>
+
+                            <?php
+                            if (isset($_GET['msg'])) {
+                                switch ($_GET['msg']) {
+                                    case 'erro':
+                                        echo "<div class='mensagem-erro'>Dados incorretos!<br>Faça login novamente.</div>";
+                                        break;
+                                }
+                            }
+                            ?>
+                        </form>
+                    </section>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <footer></footer>
+
+    <script>
+        const adminLink = document.getElementById("adminLink");
+        const alunoLink = document.getElementById("alunoLink");
+        const formFields = document.getElementById("formFields");
+
+        adminLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            formFields.innerHTML = `
+                <label for="email" class="oculto-visual">Email ou CPF</label>
+                <input id="email" name="email" class="inputs-login exibir-central" type="text" placeholder="email ou CPF" required><br>
+                <label for="senha" class="oculto-visual">Senha</label>
+                <input id="senha" name="senha" class="inputs-login exibir-central" type="password" placeholder="senha" required><br>
+                <input id="perfil" name="perfil" type="hidden" value="comunicador">
+            `;
+            adminLink.classList.add("active");
+            adminLink.classList.remove("texto-secundario");
+            alunoLink.classList.remove("active");
+            alunoLink.classList.add("texto-secundario");
+        });
+
+        alunoLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            formFields.innerHTML = `
+                <label for="ra" class="oculto-visual">RA</label>
+                <input id="ra" name="ra" class="inputs-login exibir-central" type="text" placeholder="RA (registro acadêmico)" required><br>
+                <label for="senhaAluno" class="oculto-visual">Senha</label>
+                <input id="senhaAluno" name="senhaAluno" class="inputs-login exibir-central" type="password" placeholder="senha" required><br>
+                <input id="perfil" name="perfil" type="hidden" value="discente_egresso">
+            `;
+            alunoLink.classList.add("active");
+            alunoLink.classList.remove("texto-secundario");
+            adminLink.classList.remove("active");
+            adminLink.classList.add("texto-secundario");
+        });
+    </script>
+</body>
+</html>
