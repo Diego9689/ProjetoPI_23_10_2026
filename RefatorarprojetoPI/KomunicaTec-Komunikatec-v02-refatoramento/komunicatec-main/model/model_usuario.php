@@ -74,6 +74,25 @@ class Usuario // Declaração da classe
 
         return false;
     }
+
+    // Cadastrar novo usuário na tabela "usuario"
+    public function cadastrar()
+    {
+        $sql = "INSERT INTO usuario (nome, sobrenome, email, senha, telefone, visibilidade_telefone)
+                VALUES (?, ?, ?, ?, ?, ?)";
+        $senha_hash = password_hash($this->senha, PASSWORD_DEFAULT);
+        $valores = array(
+            $this->nome ?? 'Usuário',
+            $this->sobrenome ?? '',
+            $this->email,
+            $senha_hash,
+            $this->telefone ?? null,
+            $this->visibilidade_telefone ?? 0
+        );
+        $executar = $this->con->prepare($sql);
+        $executar->execute($valores);
+        return $this->con->lastInsertId();
+    }
 }
 
 ?>

@@ -1,6 +1,6 @@
 <?php // Arquivo controlador intermediário de recebimento de dados da view e envio de dados à model
 
-// Requer arquivo da classe
+// Requer arquivo das classes
 require_once '../model/model_usuario.php';
 require_once '../model/model_comunicador_administrador.php';
 require_once '../model/model_discente_egresso.php';
@@ -25,7 +25,7 @@ if (isset($_REQUEST["acao"]))
 				if ($perfil == "discente_egresso")
 				{
 					$ra = trim($_POST["ra"] ?? '');
-					$senha = $_POST["senhaAluno"] ?? '';
+					$senha = $_POST["senhaAluno"] ?? $_POST["senha"] ?? '';
 
 					$discente_model = new DiscenteEgresso();
 					$discente = $discente_model->loginDiscente($ra, $senha);
@@ -79,6 +79,77 @@ if (isset($_REQUEST["acao"]))
 					else
 					{
 						header("Location: ../view/login.php?msg=erro");
+						exit;
+					}
+				}
+			}
+			break;
+
+		case 'cadastrar':
+			if ($_SERVER["REQUEST_METHOD"] == "POST")
+			{
+				$perfil = $_POST["perfil"] ?? 'comunicador';
+
+				if ($perfil == "discente_egresso")
+				{
+					$ra = trim($_POST["ra"] ?? '');
+					$nome = trim($_POST["nome"] ?? 'Discente');
+					$email = trim($_POST["email"] ?? ($ra . '@fatec.sp.gov.br'));
+					$senha = $_POST["senhaAluno"] ?? $_POST["senha"] ?? '';
+
+					if (!empty($ra) && !empty($senha))
+					{
+						$usuario = new Usuario();
+						$usuario->nome = $nome;
+						$usuario->sobrenome = $_POST["sobrenome"] ?? '';
+						$usuario->email = $email;
+						$usuario->senha = $senha;
+
+						$id_usuario = $usuario->cadastrar();
+
+						$discente_model = new DiscenteEgresso();
+						$discente_model->cadastrar($ra, $id_usuario);
+
+						header("Location: ../view/login.php?msg=sucesso");
+						exit;
+					}
+					else
+					{
+						header("Location: ../view/register.html?msg=erro");
+						exit;
+					}
+				}
+				else // comunicador ou admin
+				{
+					$email = trim($_POST["email"] ?? '');
+					$senha = $_POST["senha"] ?? '';
+					$cpf = trim($_POST["cpf"] ?? sprintf('%011d', rand(1, 99999999999)));
+					$nome = trim($_POST["nome"] ?? 'Comunicador');
+
+					if (!empty($email) && !empty($senha))
+					{
+						$usuario = new Usuario();
+						$usuario->nome = $nome;
+						$usuario->sobrenome = $_POST["sobrenome"] ?? '';
+						$usuario->email = $email;
+						$usuario->senha = $senha;
+
+						$id_usuario = $usuario->cadastrar();
+
+						$comunicador_model = new Comunicador_Administrador();
+						$comunicador_model->id_cpf = $cpf;
+						$comunicador_model->id_usuario_fk = $id_usuario;
+						$comunicador_model->cargo = 'professor';
+						$comunicador_model->nivel_de_acesso = ($perfil == 'admin') ? 'administrador' : 'comunicador';
+						$comunicador_model->status = 'ativo';
+						$comunicador_model->cadastrar();
+
+						header("Location: ../view/login.php?msg=sucesso");
+						exit;
+					}
+					else
+					{
+						header("Location: ../view/register.html?msg=erro");
 						exit;
 					}
 				}

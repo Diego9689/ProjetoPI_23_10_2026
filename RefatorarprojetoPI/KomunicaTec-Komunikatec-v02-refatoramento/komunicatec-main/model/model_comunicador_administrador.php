@@ -80,4 +80,19 @@ class Comunicador_Administrador // Declaração da classe
 			return $consulta; // Retorna o valor da busca
 		}
 	}
+
+	public function cadastrar()
+	{
+		$sql = "INSERT INTO perfil_administrador_comunicador (id_cpf, cargo, nivel_acesso, status, id_usuario_fk)
+				VALUES (?, ?, ?, ?, ?)";
+		$valores = array(
+			$this->id_cpf,
+			$this->cargo ?? 'professor',
+			$this->nivel_de_acesso ?? 'comunicador',
+			$this->status ?? 'ativo',
+			$this->id_usuario_fk
+		);
+		$executar = $this->con->prepare($sql);
+		$executar->execute($valores);
+	}
 }

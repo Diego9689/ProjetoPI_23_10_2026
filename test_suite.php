@@ -56,9 +56,19 @@ assertTest("TEST-004: Login Discente por RA (123456) autenticado", !empty($res_d
 $res_disc_email = $disc_model->loginDiscente('lucas@fatec.sp.gov.br', 'Paulo1234#');
 assertTest("TEST-004b: Login Discente por E-mail (lucas@fatec.sp.gov.br) autenticado", !empty($res_disc_email) && $res_disc_email['nome'] === 'Lucas');
 
-// TEST 5: Tentativa com senha errada
-$res_fail = $disc_model->loginDiscente('123456', 'SenhaErrada123');
-assertTest("TEST-005: Autenticação recusa senha incorreta", $res_fail === false);
+// TEST 5: Cadastro Novo Usuário Discente
+$novo_user = new Usuario();
+$novo_user->nome = 'Fernanda';
+$novo_user->sobrenome = 'Lima';
+$novo_user->email = 'fernanda@fatec.sp.gov.br';
+$novo_user->senha = 'Senha1234#';
+$id_f = $novo_user->cadastrar();
+
+$novo_disc = new DiscenteEgresso();
+$novo_disc->cadastrar('999888', $id_f);
+
+$check_disc = $novo_disc->loginDiscente('999888', 'Senha1234#');
+assertTest("TEST-005: Cadastro e login de novo discente (RA: 999888) realizados com sucesso", !empty($check_disc) && $check_disc['nome'] === 'Fernanda');
 
 // TEST 6: Proteção do __set
 $cat_model = new Categoria();

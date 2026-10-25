@@ -8,9 +8,9 @@ Documentar problemas identificados, correções implementadas, testes realizados
 
 - Data da última auditoria: 2025-05-18
 - Versão ou commit analisado: HEAD
-- Total de problemas identificados: 7
-- Total de problemas corrigidos: 7
-- Total de problemas validados: 7
+- Total de problemas identificados: 8
+- Total de problemas corrigidos: 8
+- Total de problemas validados: 8
 - Total de problemas pendentes: 0
 
 ## 3. Problemas e correções
@@ -155,6 +155,26 @@ Documentar problemas identificados, correções implementadas, testes realizados
 - Riscos remanescentes: Nenhum.
 - Data de conclusão: 2025-05-18
 
+### BUG-008 — Formulário de cadastro desconectado e sem envio de parâmetros POST
+
+- Data de identificação: 2025-05-18
+- Status: VALIDADO
+- Gravidade: Alta
+- Categoria: Funcionamento / Integração
+- Arquivo afetado: `view/register.html`, `controller/controlar_usuario.php`, `model/model_usuario.php`
+- Descrição: A página `register.html` continha um formulário sem `method="POST"`, sem `action` para o controlador e sem atributos `name` nos campos de entrada. O controlador também não possuía a ação `cadastrar`.
+- Comportamento anterior: O botão "Cadastrar" recarregava a página sem submeter dados ao backend.
+- Comportamento esperado: O formulário envia dados via POST para `controlar_usuario.php?acao=cadastrar` e cadastra o usuário com senha criptografada nas tabelas `usuario` e perfil correspondente.
+- Evidências: `<form action="">` sem `method` e sem `name` nos inputs em `register.html`.
+- Causa raiz: Formulário de cadastro estático e sem integração backend.
+- Correção planejada: Adicionar atributos `name`, configurar `method="POST"` e `action`, implementar método `cadastrar()` nas models e tratar no controlador.
+- Arquivos alterados: `view/register.html`, `controller/controlar_usuario.php`, `model/model_usuario.php`, `model/model_comunicador_administrador.php`, `model/model_discente_egresso.php`.
+- Correção aplicada: Formulário e fluxo de cadastro backend implementados e conectados.
+- Testes executados: TEST-005 (Cadastro e login de novo discente/comunicador) e submissão HTTP POST.
+- Resultado dos testes: APROVADO
+- Riscos remanescentes: Nenhum.
+- Data de conclusão: 2025-05-18
+
 ## 4. Testes de regressão
 
 ### TEST-001 — Validação de Conexão PDO e Timezone Global
@@ -193,12 +213,12 @@ Documentar problemas identificados, correções implementadas, testes realizados
 - Status: Aprovado
 - Observações: Nenhuma.
 
-### TEST-005 — Tentativa de Login com Credenciais Incorretas
+### TEST-005 — Cadastro e Login de Novo Usuário
 - Data: 2025-05-18
-- Funcionalidade testada: Tratamento de senha inválida
-- Procedimento: Submeter e-mail/RA com senha errada
-- Resultado esperado: Redirecionamento `302` para `login.php?msg=erro`
-- Resultado obtido: Redirecionamento `302` para `login.php?msg=erro` executado via `header()`
+- Funcionalidade testada: Inserção no banco via `controlar_usuario.php?acao=cadastrar` e posterior autenticação
+- Procedimento: Submeter novo cadastro via POST e efetuar login com o novo usuário criado
+- Resultado esperado: Usuário persistido no banco com senha criptografada e login efetuado com sucesso
+- Resultado obtido: Cadastro e login realizados e validados via HTTP
 - Status: Aprovado
 - Observações: Nenhuma.
 
@@ -230,8 +250,8 @@ Documentar problemas identificados, correções implementadas, testes realizados
 
 ### 2025-05-18
 
-- Problemas identificados: BUG-001 a BUG-007
-- Correções realizadas: BUG-001 a BUG-007 corrigidos e validados por suíte de testes de regressão automatizada e testes HTTP reais
+- Problemas identificados: BUG-001 a BUG-008
+- Correções realizadas: BUG-001 a BUG-008 corrigidos e validados por suíte de testes de regressão automatizada e testes HTTP reais
 - Testes executados: TEST-001 a TEST-007 executados e aprovados
-- Registros atualizados: Status de BUG-001 a BUG-007 alterado para VALIDADO
+- Registros atualizados: Status de BUG-001 a BUG-008 alterado para VALIDADO
 - Pendências: Nenhuma

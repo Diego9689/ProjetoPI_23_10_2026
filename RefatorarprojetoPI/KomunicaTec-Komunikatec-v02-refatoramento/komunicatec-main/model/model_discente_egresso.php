@@ -55,6 +55,22 @@ class DiscenteEgresso // Declaração da classe
 
         return false; // Retorna falso caso as credenciais não confiram
     }
+
+    public function cadastrar($id_ra, $id_usuario_fk, $curso = 'DSM', $semestre = '1', $situacao = 'discente', $turno = 'noite')
+    {
+        $sql = "INSERT INTO perfil_discente_egresso (id_ra, curso, semestre, situacao, turno, id_usuario_fk)
+                VALUES (?, ?, ?, ?, ?, ?)";
+        $valores = array(
+            $id_ra,
+            $curso,
+            $semestre,
+            $situacao,
+            $turno,
+            $id_usuario_fk
+        );
+        $executar = $this->con->prepare($sql);
+        $executar->execute($valores);
+    }
 }
 
 ?>
