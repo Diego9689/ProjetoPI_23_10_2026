@@ -21,7 +21,10 @@ class Comunicador_Administrador // Declaração da classe
 
 	public function __set($atributo, $valor) // Função set mágico recebe automaticamente nome do atributo e o valor a aplicar
 	{
-		$this->$atributo = $valor; // Atribui característica de classe com o valor recebido
+		if (property_exists($this, $atributo))
+		{
+			$this->$atributo = $valor; // Atribui característica de classe com o valor recebido
+		}
 	}
 
 	// Construtor de conexão
@@ -57,7 +60,7 @@ class Comunicador_Administrador // Declaração da classe
 
 		$executar = $this->con->prepare($consulta_SQL); // Prepara o comando de seleção e o armazena
 		$executar->execute($valores_consulta); // Executa o comando com a especificação
-		
+
 		$valores = $executar->fetchAll(); // Armazena os valores da consulta
 		if ($valores) // Se existem valores na consulta
 		{
@@ -76,5 +79,20 @@ class Comunicador_Administrador // Declaração da classe
 			}
 			return $consulta; // Retorna o valor da busca
 		}
+	}
+
+	public function cadastrar()
+	{
+		$sql = "INSERT INTO perfil_administrador_comunicador (id_cpf, cargo, nivel_acesso, status, id_usuario_fk)
+				VALUES (?, ?, ?, ?, ?)";
+		$valores = array(
+			$this->id_cpf,
+			$this->cargo ?? 'professor',
+			$this->nivel_de_acesso ?? 'comunicador',
+			$this->status ?? 'ativo',
+			$this->id_usuario_fk
+		);
+		$executar = $this->con->prepare($sql);
+		$executar->execute($valores);
 	}
 }

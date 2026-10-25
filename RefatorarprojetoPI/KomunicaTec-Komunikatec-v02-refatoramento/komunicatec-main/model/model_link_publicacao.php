@@ -21,7 +21,10 @@ class Link_Publicacao // Declaração da classe, herda atributos e característi
 
     public function __set($atributo, $valor) // Função set mágico recebe automaticamente nome do atributo e o valor a aplicar
     {
-        $this->$atributo = $valor; // Atribui característica de classe com o valor recebido
+        if (property_exists($this, $atributo))
+        {
+            $this->$atributo = $valor; // Atribui característica de classe com o valor recebido
+        }
     }
 
     // Construtor de conexão
@@ -51,7 +54,7 @@ class Link_Publicacao // Declaração da classe, herda atributos e característi
 
         $valores_atualizacao = array($this->endereco_link, $this->id_link_publicacao); // Valores de atualização
         $executar = $this->con->prepare($atualiza_SQL); // Prepara o comando de atualização e o armazena
-        $executar->execute($valores_atualizacao); // Executa o comando com os valores especificados        
+        $executar->execute($valores_atualizacao); // Executa o comando com os valores especificados
     }
 
 }

@@ -2,7 +2,7 @@
 
 require_once __DIR__ . "/conexao.php"; // Requer arquivo de conexão ao banco de dados
 
-date_default_timezone_set('Brazil/East'); // Formato de data
+date_default_timezone_set('America/Sao_Paulo'); // Formato de data
 
 class Publicacao // Declaração da classe
 {
@@ -29,7 +29,10 @@ class Publicacao // Declaração da classe
 
     public function __set($atributo, $valor) // Função set mágico recebe automaticamente nome do atributo e o valor a aplicar
     {
-        $this->$atributo = $valor; // Atribui característica de classe com o valor recebido
+        if (property_exists($this, $atributo))
+        {
+            $this->$atributo = $valor; // Atribui característica de classe com o valor recebido
+        }
     }
 
     // Construtor de conexão
@@ -112,7 +115,7 @@ class Publicacao // Declaração da classe
 
         $executar = $this->con->prepare($consulta_SQL); // Prepara o comando de seleção e o armazena
         $executar->execute(); // Executa o comando sem especificações
-        
+
         $publicacoes = array(); // Array que armazena resultado da consulta
         foreach ($executar->fetchAll() as $valor) // Para cada linha do resultado da execução (consulta), armazena a linha em $valor
         {
@@ -132,7 +135,7 @@ class Publicacao // Declaração da classe
                 "nome"                          => $valor['nome'],
                 "sobrenome"                     => $valor['sobrenome'],
                 "cargo"                         => $valor['cargo'],
-                
+
                 "id_link_publicacao"            => $valor['id_link_publicacao'],
                 "endereco_link"                 => $valor['endereco_link']
             ];
@@ -142,7 +145,6 @@ class Publicacao // Declaração da classe
 
     public function consultar_usuario() // Consulta dados da tabela, especificando um usuário
     {
-        // Comando SQL de seleção
         // Comando SQL de seleção
         $consulta_SQL = "SELECT
             p.id_publicacao,
@@ -192,7 +194,7 @@ class Publicacao // Declaração da classe
                 "nome_categoria"                => $valor['nome_categoria'],
 
                 "id_cpf_fk"                     => $valor['id_cpf_fk'],
-                
+
                 "id_link_publicacao"            => $valor['id_link_publicacao'],
                 "endereco_link"                 => $valor['endereco_link']
             ];
@@ -234,11 +236,13 @@ class Publicacao // Declaração da classe
     public function apagar() // Deleta uma publicação específica
     {
         // Comando SQL de exclusão
-        $exclusao_SQL = "DELETE FROM link_publicacao WHERE id_publicacao_fk = ?;
-        DELETE FROM publicacao WHERE id_publicacao = ?";
-        $valores_exclusao = array($this->id_publicacao, $this->id_publicacao);
-        $executar = $this->con->prepare($exclusao_SQL); // Prepara o comando de seleção e o armazena
-        $executar->execute($valores_exclusao); // Executa o comando com os valores especificados
+        $exclusao_link = "DELETE FROM link_publicacao WHERE id_publicacao_fk = ?";
+        $executar_link = $this->con->prepare($exclusao_link);
+        $executar_link->execute(array($this->id_publicacao));
+
+        $exclusao_pub = "DELETE FROM publicacao WHERE id_publicacao = ?";
+        $executar_pub = $this->con->prepare($exclusao_pub);
+        $executar_pub->execute(array($this->id_publicacao));
     }
 }
 

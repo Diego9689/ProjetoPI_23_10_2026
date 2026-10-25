@@ -20,7 +20,10 @@ class DiscenteEgresso // Declaração da classe
 
     public function __set($atributo, $valor) // Função set mágico recebe automaticamente nome do atributo e o valor a aplicar
     {
-        $this->$atributo = $valor; // Atribui característica de classe com o valor recebido
+        if (property_exists($this, $atributo))
+        {
+            $this->$atributo = $valor; // Atribui característica de classe com o valor recebido
+        }
     }
 
     // Construtor de conexão
@@ -34,12 +37,13 @@ class DiscenteEgresso // Declaração da classe
 
     public function loginDiscente($ra, $senha) // Verifica credenciais de discente/egresso pelo RA
     {
-        $consulta_SQL = "SELECT id, nome, ra, senha
-                           FROM discente_egresso
-                          WHERE ra = :ra
-                          LIMIT 1"; // Comando SQL de seleção por RA
+        $consulta_SQL = "SELECT u.id_usuario, u.nome, u.sobrenome, u.email, u.senha, p.id_ra, p.curso, p.situacao
+                           FROM usuario u
+                     INNER JOIN perfil_discente_egresso p ON u.id_usuario = p.id_usuario_fk
+                          WHERE p.id_ra = :ra OR u.email = :ra
+                          LIMIT 1"; // Comando SQL de seleção por RA ou e-mail
         $executar = $this->con->prepare($consulta_SQL); // Prepara o comando de seleção e o armazena
-        $executar->bindParam(':ra', $ra); // Vincula o parâmetro RA ao comando preparado
+        $executar->bindParam(':ra', $ra); // Vincula o parâmetro ao comando preparado
         $executar->execute(); // Executa o comando com o parâmetro vinculado
 
         $discente = $executar->fetch(PDO::FETCH_ASSOC); // Armazena a primeira linha do resultado da consulta
@@ -49,10 +53,23 @@ class DiscenteEgresso // Declaração da classe
             return $discente; // Retorna os dados do discente autenticado
         }
 
-        // Para testes com senha em texto puro:
-        // if ($discente && $senha == $discente['senha']) return $discente;
-
         return false; // Retorna falso caso as credenciais não confiram
+    }
+
+    public function cadastrar($id_ra, $id_usuario_fk, $curso = 'DSM', $semestre = '1', $situacao = 'discente', $turno = 'noite')
+    {
+        $sql = "INSERT INTO perfil_discente_egresso (id_ra, curso, semestre, situacao, turno, id_usuario_fk)
+                VALUES (?, ?, ?, ?, ?, ?)";
+        $valores = array(
+            $id_ra,
+            $curso,
+            $semestre,
+            $situacao,
+            $turno,
+            $id_usuario_fk
+        );
+        $executar = $this->con->prepare($sql);
+        $executar->execute($valores);
     }
 }
 
