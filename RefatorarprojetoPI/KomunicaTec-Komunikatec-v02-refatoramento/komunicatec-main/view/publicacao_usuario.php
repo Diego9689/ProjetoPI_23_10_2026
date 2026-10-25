@@ -16,7 +16,7 @@ $categorias = $categoria->consultar();
 	<link rel="stylesheet" href="my_publi.css">
 	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 	<style>
-		.oculto { display: none; } /* .ativo não será usada para display, mas mantida por compatibilidade */
+		.oculto { display: none !important; }
 	</style>
 </head>
 
@@ -42,19 +42,19 @@ $categorias = $categoria->consultar();
 				<?php
 				foreach ($categorias as $opcao)
 				{
-					echo "<label><input type='checkbox' class='filtro-checkbox' value=".htmlspecialchars($opcao['nome_categoria']).">".htmlspecialchars($opcao['nome_categoria'])."</label>";
+					echo "<label><input type='checkbox' class='filtro-checkbox' value='".htmlspecialchars($opcao['nome_categoria'])."'> ".htmlspecialchars($opcao['nome_categoria'])."</label>";
 				}
 				?>
 			</div>
-			
+
 			<?php
-			if (isset($_SESSION["id_cpf"])):
-			if ($comunicador["id_cpf"] == $_SESSION["id_cpf"]): // Verifica se o perfil pertence ao usuario atual
+			if (isset($_SESSION["id_cpf"]) || isset($_SESSION["usuario_ativo"])):
+				if (!isset($_GET["comunicador"]) || $_GET["comunicador"] == ($_SESSION["id_cpf"] ?? '')): // Verifica se o perfil pertence ao usuario atual
 			?>
 			<button class="editar" onclick="location.href='form_publicacao.php'">+ Adicionar</button>
 			<?php endif; endif; ?>
 
-			<?php if ($publicados == null): // Verifica se não foi retornado nehuma publicação ?>
+			<?php if (empty($publicados)): // Verifica se não foi retornado nehuma publicação ?>
 
 				<h1>Nenhuma informação encontrada</h1>
 
@@ -62,34 +62,30 @@ $categorias = $categoria->consultar();
 
 				<!-- Lista de publicações -->
 				<?php foreach($publicados as $publicado): ?>
-				<?= "<div id='pub-".$publicado['id_publicacao'].
-					"'class='publicacao-card oculto'
-					categoria='".htmlspecialchars($publicado["nome_categoria"] ?? "Outro").
-					"'>" ?>
+				<div id="pub-<?= $publicado['id_publicacao'] ?>" class="publicacao-card" categoria="<?= htmlspecialchars($publicado["nome_categoria"] ?? "Outro") ?>">
 					<div class="cabecalho">
-						<h2><?= $publicado["titulo"] ?></h2>
-						<?= $publicado["nome_categoria"] ?>
+						<h2><?= htmlspecialchars($publicado["titulo"]) ?></h2>
+						<span><?= htmlspecialchars($publicado["nome_categoria"] ?? "Geral") ?></span>
 						<span align="right">
-							Publicado em <?= date("d/m/Y H:i", strtotime($publicado["data_publicacao"])) // Formato da data, converte valor string para tempo ?>
-							<br>Valido até <?= date("d/m/Y", strtotime($publicado["data_expiracao"])) ?>
+							Publicado em <?= date("d/m/Y H:i", strtotime($publicado["data_publicacao"])) ?>
+							<br>Válido até <?= date("d/m/Y", strtotime($publicado["data_expiracao"])) ?>
 						</span>
 					</div>
-					<!-- "whitespace: pre-line" converte quebras de linha para HTML -->
-					<p style="white-space: pre-line;"><?= $publicado["descricao"] ?></p>
+					<p style="white-space: pre-line;"><?= htmlspecialchars($publicado["descricao"]) ?></p>
 					<?php
-					if (isset($publicado["endereco_link"]) && $publicado["endereco_link"] != null)
+					if (!empty($publicado["endereco_link"]))
 					{
-						echo '<a href="'.$publicado["endereco_link"].'" class="link">'.$publicado["endereco_link"].'</a>';
+						echo '<a href="'.htmlspecialchars($publicado["endereco_link"]).'" class="link" target="_blank">'.htmlspecialchars($publicado["endereco_link"]).'</a>';
 					}
 					?>
 
 					<?php
-					if (session_status() === PHP_SESSION_NONE) session_start(); // Se não houver sessão iniciada, inicia sessão
-					if (isset($_SESSION["id_cpf"])):
-					if ($comunicador["id_cpf"] == $_SESSION["id_cpf"] || $_SESSION["nivel_acesso"] == "administrador"): // Verifica se o perfil pertence ao usuario atual
+					if (session_status() === PHP_SESSION_NONE) session_start();
+					if (isset($_SESSION["usuario_ativo"]) && $_SESSION["usuario_ativo"]):
+						if (($comunicador["id_cpf"] ?? null) == ($_SESSION["id_cpf"] ?? null) || ($_SESSION["nivel_acesso"] ?? null) == "administrador"):
 					?>
 					<div class="acoes">
-						<?php // "json_encode()" Permite tratar valores nulos e já declara variáveis para a função JavaScript
+						<?php
 						echo "<button class='editar'
 							onclick='atualizar(".json_encode([
 								"id_publicacao"			=> $publicado['id_publicacao'],
@@ -113,37 +109,7 @@ $categorias = $categoria->consultar();
 				<?php endforeach; ?>
 
 			<?php endif; ?>
-			
-			<!-- Base de publicações -->
-			<!--div class="publicacao-card">
-				<div class="cabecalho">
-					<h2>Convite ao Simbaju DSM!</h2>
-					<span>Publicado em 08/11/2024</span>
-				</div>
-				<p>
-					Boa tarde a todos! Nos dias 12, 13 e 14, ocorrerão as apresentações do Simbaju do DSM.
-					Estudantes do GT1 e G3E estão convidados.
-				</p>
-				<div class="acoes">
-				   <button class="editar" onclick="location.href='form_publicacao.html'">Editar</button>
-					<button class="excluir">Excluir</button>
-				</div>
-			</div>
 
-			<div class="publicacao-card">
-				<div class="cabecalho">
-					<h2>Estágio em Análise de Dados</h2>
-					<span>Publicado em 10/11/2024</span>
-				</div>
-				<p>
-					Bom dia a todos! Um ex-aluno me posicionou sobre uma vaga de estágio em aberto para a empresa XPTO.
-					Interessados, por favor, clicar no link.
-				</p>
-				<div class="acoes">
-					<button class="editar" onclick="location.href='form_publicacao.html'">Editar</button>
-					<button class="excluir">Excluir</button>
-				</div>
-			</div-->
 		</section>
 	</main>
 
@@ -152,10 +118,7 @@ $categorias = $categoria->consultar();
 		<p>© 2025 - KomunicaTec</p>
 	</footer>
 
-
-
 	<script>
-		// ========== FUNCIONALIDADE DE FILTRO CORRIGIDA ==========
     let idsPublicacoes = [];
 
     function inicializarFiltro() {
@@ -169,7 +132,6 @@ $categorias = $categoria->consultar();
             idsPublicacoes.push(pub.id);
         });
 
-        // Mostra todos os cards ao carregar a página
         aplicarFiltro();
     }
 
@@ -186,74 +148,63 @@ $categorias = $categoria->consultar();
             const elemento = document.getElementById(id);
             if (!elemento) return;
 
-            let categoriaCard = elemento.getAttribute('categoria').trim();
-            // Se a categoria do card estiver vazia, considera 'Outros'
+            let categoriaCard = (elemento.getAttribute('categoria') || '').trim();
             if (categoriaCard === '') {
-                categoriaCard = 'Outros';
+                categoriaCard = 'Outro';
             }
 
             if (exibirTodos || categoriasSelecionadas.includes(categoriaCard)) {
-                // Mostra o card: simplesmente remove a classe 'oculto'
                 elemento.classList.remove('oculto');
             } else {
-                // Esconde o card: adiciona a classe 'oculto'
                 elemento.classList.add('oculto');
             }
         });
     }
 
-    // Inicializa quando o DOM estiver pronto (apenas uma vez)
     document.addEventListener('DOMContentLoaded', inicializarFiltro);
-    // ========== FIM DO FILTRO ==========
 
-		function atualizar(dados) // Abrir formulário de edição
+	function atualizar(dados)
+	{
+		const FORM_ATUALIZACAO = document.createElement('form');
+		FORM_ATUALIZACAO.method = 'POST';
+		FORM_ATUALIZACAO.action = 'form_publicacao.php?acao=atualizacao';
+		FORM_ATUALIZACAO.style.display = 'none';
+
+		for (const dado in dados)
 		{
-			// Cria formulário oculto para enviar dados e ação ao formulário de edição
-			const FORM_ATUALIZACAO = document.createElement('form'); // Declara elemento de formulário
-			FORM_ATUALIZACAO.method = 'POST'; // Estabelece método de requisição como POST
-			FORM_ATUALIZACAO.action = 'form_publicacao.php?acao=atualizacao'; // Destino dos dados enviados
-			FORM_ATUALIZACAO.style.display = 'none'; // Exibição oculta, não aparece na tela do usuário
-
-			for (const dado in dados) // Para cada linha de "dados"
+			if (dados.hasOwnProperty(dado))
 			{
-				if (dados.hasOwnProperty(dado))
-				{
-	   				// Campos de recebimento de dados
-					const ENTRADA = document.createElement('input'); // Declara elemento input
-					ENTRADA.type = 'hidden'; // Tipo oculto, não aparece na tela do usuário
-					ENTRADA.name = dado; // Estabelece nome para recebimento do controlador
-					ENTRADA.value = dados[dado]; // Aplica valor recebido (id de publicação)
-					FORM_ATUALIZACAO.appendChild(ENTRADA); // Estabelece herança com o formulário
-				}
-			}
-
-			document.body.appendChild(FORM_ATUALIZACAO); // Estabelece herança com o body
-			FORM_ATUALIZACAO.submit(); // Envia o formulário
-		}
-
-
-
-		function apagar(id_publicacao) // Apagar publicação selecionada
-		{
-			if (confirm("Deseja realmente excluir esta publicação?")) // Alerta de confirmação
-			{
-				// Cria formulário oculto para enviar código e ação ao controlador
-				const FORM_EXCLUSAO = document.createElement('form'); // Declara elemento de formulário
-				FORM_EXCLUSAO.method = 'POST'; // Estabelece método de requisição como POST
-				FORM_EXCLUSAO.action = '../controller/controlar_publicacao.php?acao=excluir'; // Destino dos dados enviados
-				FORM_EXCLUSAO.style.display = 'none'; // Torna oculto
-		
-				// Campo de recebimento de id_publicacao
-				const ID_EXCLUSAO = document.createElement('input'); // Declara elemento input
-				ID_EXCLUSAO.type = 'hidden'; // Tipo oculto, não aparece na tela do usuário
-				ID_EXCLUSAO.name = 'id_publicacao'; // Estabelece nome para recebimento do controlador
-				ID_EXCLUSAO.value = id_publicacao; // Aplica valor recebido (id de publicação)
-				FORM_EXCLUSAO.appendChild(ID_EXCLUSAO); // Estabelece herança com o formulário
-
-				document.body.appendChild(FORM_EXCLUSAO); // Estabelece herança com o body
-				FORM_EXCLUSAO.submit(); // Envia o formulário
+				const ENTRADA = document.createElement('input');
+				ENTRADA.type = 'hidden';
+				ENTRADA.name = dado;
+				ENTRADA.value = dados[dado];
+				FORM_ATUALIZACAO.appendChild(ENTRADA);
 			}
 		}
+
+		document.body.appendChild(FORM_ATUALIZACAO);
+		FORM_ATUALIZACAO.submit();
+	}
+
+	function apagar(id_publicacao)
+	{
+		if (confirm("Deseja realmente excluir esta publicação?"))
+		{
+			const FORM_EXCLUSAO = document.createElement('form');
+			FORM_EXCLUSAO.method = 'POST';
+			FORM_EXCLUSAO.action = '../controller/controlar_publicacao.php?acao=excluir';
+			FORM_EXCLUSAO.style.display = 'none';
+
+			const ID_EXCLUSAO = document.createElement('input');
+			ID_EXCLUSAO.type = 'hidden';
+			ID_EXCLUSAO.name = 'id_publicacao';
+			ID_EXCLUSAO.value = id_publicacao;
+			FORM_EXCLUSAO.appendChild(ID_EXCLUSAO);
+
+			document.body.appendChild(FORM_EXCLUSAO);
+			FORM_EXCLUSAO.submit();
+		}
+	}
 	</script>
 </body>
 </html>

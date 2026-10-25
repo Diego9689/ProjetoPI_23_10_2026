@@ -16,56 +16,79 @@ class Usuario // Declaração da classe
 
     private $con; // Objeto de acesso para conexão com BD
 
-
-
     // Métodos mágicos de classe
-    public function __get($atributo) // Função get mágico automaticamente recebe nome do atributo de classe
+    public function __get($atributo)
     {
-        return $this->$atributo ?? null; // Retorna o valor do atributo de classe ou nulo se não encontrar
+        return $this->$atributo ?? null;
     }
 
-    public function __set($atributo, $valor) // Função set mágico recebe automaticamente nome do atributo e o valor a aplicar
+    public function __set($atributo, $valor)
     {
-        $this->$atributo = $valor; // Atribui característica de classe com o valor recebido
+        $this->$atributo = $valor;
     }
 
     // Construtor de conexão
-    public function __construct() // Método construtor: Executa sempre que um objeto de classe for instanciado
+    public function __construct()
     {
-        $conectar = new Conexao(); // Objeto de conexão ao BD
-        $this->con = $conectar->Conectar(); // Executa método de conexão ao BD
+        $conectar = new Conexao();
+        $this->con = $conectar->Conectar();
     }
 
-
-
-    // Verificação de login da tabela "usuario"
-    public function login_comunicador() // Verifica dados recebidos com os dados cadastrados
+    // Cadastra um novo usuário na tabela "usuario"
+    public function cadastrar()
     {
-        // Comando SQL de busca
+        $sql = "INSERT INTO usuario (nome, sobrenome, email, senha, telefone, visibilidade_telefone, foto_perfil)
+                VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        $senhaHash = password_hash($this->senha, PASSWORD_DEFAULT);
+        $visibilidade = $this->visibilidade_telefone ?? 0;
+        $foto = $this->foto_de_perfil ?? null;
+
+        $stmt = $this->con->prepare($sql);
+        $stmt->execute([
+            $this->nome,
+            $this->sobrenome,
+            $this->email,
+            $senhaHash,
+            $this->telefone,
+            $visibilidade,
+            $foto
+        ]);
+
+        $this->id_usuario = $this->con->lastInsertId();
+        return $this->id_usuario;
+    }
+
+    // Regista aceite obrigatório dos termos
+    public function registrarAceiteObrigatorio($id_usuario)
+    {
+        $sql = "INSERT INTO aceite_obrigatorio (aceite_termo_de_uso, data_aceite, aceite_politica_de_privacidade, id_usuario_fk)
+                VALUES (1, NOW(), 1, ?)";
+        $stmt = $this->con->prepare($sql);
+        return $stmt->execute([$id_usuario]);
+    }
+
+    // Verificação de login da tabela "usuario" (para comunicadores / administradores)
+    public function login_comunicador()
+    {
         $verifica_SQL = "SELECT
-            u.id_usuario, u.email, u.senha, c.id_cpf, c.nivel_acesso
+            u.id_usuario, u.nome, u.sobrenome, u.email, u.senha, c.id_cpf, c.nivel_acesso, c.cargo
         FROM usuario u
         RIGHT JOIN
             perfil_administrador_comunicador c ON u.id_usuario = c.id_usuario_fk
-        WHERE email = ?
+        WHERE u.email = ? OR c.id_cpf = ?
         LIMIT 1";
-        // Valores de busca
-        $valores_verificacao = array($this->email);
-        $executar = $this->con->prepare($verifica_SQL); // Prepara o comando de busca e o armazena
-        $executar->execute($valores_verificacao); // Executa o comando com os valores especificados
-        $valor = $executar->fetch(); // Armazena uma linha de valores da consulta
 
-        if ($valor) // Se existem valores na consulta
+        $valores_verificacao = array($this->email, $this->email);
+        $executar = $this->con->prepare($verifica_SQL);
+        $executar->execute($valores_verificacao);
+        $valor = $executar->fetch(PDO::FETCH_ASSOC);
+
+        if ($valor)
         {
-            $verificacao['id_usuario']  = $valor['id_usuario']; // Armazena resultado da busca
-            $verificacao['email']       = $valor['email'];
-            $verificacao['senha']       = $valor['senha'];
-            $verificacao['id_cpf']      = $valor['id_cpf'];
-            $verificacao['nivel_acesso']      = $valor['nivel_acesso'];
-
-            return $verificacao; // Retorna o valor da busca
+            return $valor;
         }
+        return false;
     }
 }
-
 ?>
