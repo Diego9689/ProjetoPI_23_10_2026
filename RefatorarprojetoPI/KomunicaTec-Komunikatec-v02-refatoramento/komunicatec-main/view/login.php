@@ -55,6 +55,9 @@
                                     case 'erro':
                                         echo "<div class='mensagem-erro'>Dados incorretos!<br>Faça login novamente.</div>";
                                         break;
+                                    case 'sucesso_cadastro':
+                                        echo "<div class='mensagem-sucesso' style='color:#1F496B; font-weight:bold; margin-top:10px;'>Cadastro realizado com sucesso!<br>Faça login para continuar.</div>";
+                                        break;
                                 }
                             }
                             ?>

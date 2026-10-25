@@ -4,56 +4,66 @@ require_once __DIR__ . "/conexao.php"; // Requer arquivo de conexão ao banco de
 
 class DiscenteEgresso // Declaração da classe
 {
-    // Características de classe: Atributos de "discente_egresso"
-    private $id_discente;
-    private $nome_discente;
-    private $ra_discente;
-    private $senha_discente;
+    private $id_ra;
+    private $curso;
+    private $semestre;
+    private $situacao;
+    private $turno;
+    private $descricao;
+    private $id_usuario_fk;
 
     private $con; // Objeto de acesso para conexão com BD
 
-    // Métodos mágicos de classe
-    public function __get($atributo) // Função get mágico automaticamente recebe nome do atributo de classe
+    public function __get($atributo)
     {
-        return $this->$atributo ?? null; // Retorna o valor do atributo de classe ou nulo se não encontrar
+        return $this->$atributo ?? null;
     }
 
-    public function __set($atributo, $valor) // Função set mágico recebe automaticamente nome do atributo e o valor a aplicar
+    public function __set($atributo, $valor)
     {
-        $this->$atributo = $valor; // Atribui característica de classe com o valor recebido
+        $this->$atributo = $valor;
     }
 
-    // Construtor de conexão
-    public function __construct() // Método construtor: Executa sempre que um objeto de classe for instanciado
+    public function __construct()
     {
-        $conectar = new Conexao(); // Objeto de conexão ao BD
-        $this->con = $conectar->Conectar(); // Executa método de conexão ao BD
+        $conectar = new Conexao();
+        $this->con = $conectar->Conectar();
     }
 
-
-
-    public function loginDiscente($ra, $senha) // Verifica credenciais de discente/egresso pelo RA
+    public function cadastrar()
     {
-        $consulta_SQL = "SELECT id, nome, ra, senha
-                           FROM discente_egresso
-                          WHERE ra = :ra
-                          LIMIT 1"; // Comando SQL de seleção por RA
-        $executar = $this->con->prepare($consulta_SQL); // Prepara o comando de seleção e o armazena
-        $executar->bindParam(':ra', $ra); // Vincula o parâmetro RA ao comando preparado
-        $executar->execute(); // Executa o comando com o parâmetro vinculado
+        $sql = "INSERT INTO perfil_discente_egresso (id_ra, curso, semestre, situacao, turno, descricao, id_usuario_fk)
+                VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $executar = $this->con->prepare($sql);
+        return $executar->execute([
+            $this->id_ra,
+            $this->curso ?? 'DSM',
+            $this->semestre ?? '1',
+            $this->situacao ?? 'discente',
+            $this->turno ?? 'noite',
+            $this->descricao ?? '',
+            $this->id_usuario_fk
+        ]);
+    }
 
-        $discente = $executar->fetch(PDO::FETCH_ASSOC); // Armazena a primeira linha do resultado da consulta
+    public function loginDiscente($ra, $senha)
+    {
+        $consulta_SQL = "SELECT p.id_ra, u.id_usuario, u.nome, u.sobrenome, u.email, u.senha
+                           FROM perfil_discente_egresso p
+                           JOIN usuario u ON u.id_usuario = p.id_usuario_fk
+                          WHERE p.id_ra = ?
+                          LIMIT 1";
+        $executar = $this->con->prepare($consulta_SQL);
+        $executar->execute([$ra]);
 
-        if ($discente && password_verify($senha, $discente['senha'])) // Verifica se o discente existe e se a senha confere
+        $discente = $executar->fetch(PDO::FETCH_ASSOC);
+
+        if ($discente && password_verify($senha, $discente['senha']))
         {
-            return $discente; // Retorna os dados do discente autenticado
+            return $discente;
         }
 
-        // Para testes com senha em texto puro:
-        // if ($discente && $senha == $discente['senha']) return $discente;
-
-        return false; // Retorna falso caso as credenciais não confiram
+        return false;
     }
 }
-
 ?>

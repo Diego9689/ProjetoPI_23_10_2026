@@ -14,26 +14,39 @@ class Comunicador_Administrador // Declaração da classe
 	private $con; // Objeto de acesso para conexão com BD
 
 	// Métodos mágicos de classe
-	public function __get($atributo) // Função get mágico automaticamente recebe nome do atributo de classe
+	public function __get($atributo)
 	{
-		return $this->$atributo ?? null; // Retorna o valor do atributo de classe ou nulo se não encontrar
+		return $this->$atributo ?? null;
 	}
 
-	public function __set($atributo, $valor) // Função set mágico recebe automaticamente nome do atributo e o valor a aplicar
+	public function __set($atributo, $valor)
 	{
-		$this->$atributo = $valor; // Atribui característica de classe com o valor recebido
+		$this->$atributo = $valor;
 	}
 
 	// Construtor de conexão
-	public function __construct() // Método construtor: Executa sempre que um objeto de classe for instanciado
+	public function __construct()
 	{
-		$conectar = new Conexao(); // Objeto de conexão ao BD
-		$this->con = $conectar->Conectar(); // Executa método de conexão ao BD
+		$conectar = new Conexao();
+		$this->con = $conectar->Conectar();
 	}
 
-	public function consultar_usuario() // Verifica dados recebidos com os dados cadastrados
+	public function cadastrar()
 	{
-		// Comando SQL de busca
+		$sql = "INSERT INTO perfil_administrador_comunicador (id_cpf, cargo, nivel_acesso, status, id_usuario_fk)
+				VALUES (?, ?, ?, ?, ?)";
+		$executar = $this->con->prepare($sql);
+		return $executar->execute([
+			$this->id_cpf,
+			$this->cargo ?? 'professor',
+			$this->nivel_acesso ?? 'comunicador',
+			$this->status ?? 'ativo',
+			$this->id_usuario_fk
+		]);
+	}
+
+	public function consultar_usuario()
+	{
 		$consulta_SQL = "SELECT
 			a.id_cpf,
 			u.nome,
@@ -53,17 +66,17 @@ class Comunicador_Administrador // Declaração da classe
 			a.id_cpf = ?
 		LIMIT 1";
 
-		$valores_consulta = array($this->id_cpf); // Recebe o parâmetro de busca
+		$valores_consulta = array($this->id_cpf);
 
-		$executar = $this->con->prepare($consulta_SQL); // Prepara o comando de seleção e o armazena
-		$executar->execute($valores_consulta); // Executa o comando com a especificação
-		
-		$valores = $executar->fetchAll(); // Armazena os valores da consulta
-		if ($valores) // Se existem valores na consulta
+		$executar = $this->con->prepare($consulta_SQL);
+		$executar->execute($valores_consulta);
+
+		$valores = $executar->fetchAll();
+		if ($valores)
 		{
-			foreach ($valores as $valor) // Para cada linha do resultado da execução (consulta), armazena a linha em $valor
+			foreach ($valores as $valor)
 			{
-				$consulta['id_cpf']					= $valor['id_cpf']; // Armazena resultado da busca
+				$consulta['id_cpf']					= $valor['id_cpf'];
 				$consulta["nome"]					= $valor["nome"];
 				$consulta["sobrenome"]				= $valor["sobrenome"];
 				$consulta["email"]					= $valor["email"];
@@ -74,7 +87,9 @@ class Comunicador_Administrador // Declaração da classe
 				$consulta['status']					= $valor['status'];
 				$consulta['id_usuario_fk']			= $valor['id_usuario_fk'];
 			}
-			return $consulta; // Retorna o valor da busca
+			return $consulta;
 		}
+		return false;
 	}
 }
+?>
